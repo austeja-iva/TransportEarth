@@ -35,6 +35,16 @@
             "src": "icons/TransportEarthLogo.webp",
             "sizes": "2400x2400",
             "type": "image/webp"
+        },
+        {
+            "src": "icons/BG.webp",
+            "sizes": "1199x899",
+            "type": "image/webp"
+        },
+        {
+            "src": "icons/Globe.webp",
+            "sizes": "899x899",
+            "type": "image/webp"
         }
     ]
 }
