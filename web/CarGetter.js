@@ -1,8 +1,31 @@
-
 const API_KEY_DISTANCE = "eyJvcmciOiI1YjNjZTM1OTc4NTExMTAwMDFjZjYyNDgiLCJpZCI6ImUyNzQ2MTRmNDdiNTQwZDY4ZmUwMjM4YWRmNzVmODNiIiwiaCI6Im11cm11cjY0In0=";
 const API_KEY_GEOCODE = "6a52b70157b03893596038csr272c94";
 
-async function getCarInfo(origin, destination) {
+async function getCarInfo(origin = '', destination = '') {
+    try {
+        if (typeof origin === 'string' && typeof destination === 'string') {
+            return JSON.stringify(await getCarRoute(origin, destination));
+        }
+
+        return JSON.stringify(await getCarInfoData(origin, destination));
+    } catch (error) {
+        return JSON.stringify({ error: error?.message || String(error) });
+    }
+}
+
+async function getBikeInfo(origin = '', destination = '') {
+    try {
+        if (typeof origin === 'string' && typeof destination === 'string') {
+            return JSON.stringify(await getBikeRoute(origin, destination));
+        }
+
+        return JSON.stringify(await getBikeInfoData(origin, destination));
+    } catch (error) {
+        return JSON.stringify({ error: error?.message || String(error) });
+    }
+}
+
+async function getCarInfoData(origin, destination) {
     const body = JSON.stringify({
         coordinates: [
             [origin[0], origin[1]],
@@ -23,10 +46,10 @@ async function getCarInfo(origin, destination) {
     let responseBody = await response.text();
     let distance = JSON.parse(responseBody)["routes"][0]["summary"]["distance"];
     let duration = JSON.parse(responseBody)["routes"][0]["summary"]["duration"];
-    return { distance, duration, co2 : distance * 0.0000055 };
+    return { distance, duration, co2: distance * 0.4 };
 }
 
-async function getBikeInfo(origin, destination) {
+async function getBikeInfoData(origin, destination) {
     const body = JSON.stringify({
         coordinates: [
             [origin[0], origin[1]],
@@ -47,12 +70,12 @@ async function getBikeInfo(origin, destination) {
     let responseBody = await response.text();
     let distance = JSON.parse(responseBody)["routes"][0]["summary"]["distance"];
     let duration = JSON.parse(responseBody)["routes"][0]["summary"]["duration"];
-    return { distance, duration, co2 : 0.0 };
+    return { distance, duration, co2: 0.0 };
 }
 
 async function getCoordsFromAddress(address) {
     const url = `https://geocode.maps.co/search?q=${encodeURIComponent(address)}&api_key=${API_KEY_GEOCODE}`;
-    return (await fetch(url)).text()
+    return (await fetch(url)).text();
 }
 
 async function getCarRoute(originAddress, destinationAddress) {
@@ -64,7 +87,7 @@ async function getCarRoute(originAddress, destinationAddress) {
     var dlat = parseFloat(JSON.parse(dCoords)[0]["lat"]);
     var dlng = parseFloat(JSON.parse(dCoords)[0]["lon"]);
     var destinationCoords = [dlng, dlat];
-    return await getCarInfo(originCoords, destinationCoords);
+    return await getCarInfoData(originCoords, destinationCoords);
 }
 
 async function getBikeRoute(originAddress, destinationAddress) {
@@ -76,5 +99,5 @@ async function getBikeRoute(originAddress, destinationAddress) {
     var dlat = parseFloat(JSON.parse(dCoords)[0]["lat"]);
     var dlng = parseFloat(JSON.parse(dCoords)[0]["lon"]);
     var destinationCoords = [dlng, dlat];
-    return await getBikeInfo(originCoords, destinationCoords);
+    return await getBikeInfoData(originCoords, destinationCoords);
 }

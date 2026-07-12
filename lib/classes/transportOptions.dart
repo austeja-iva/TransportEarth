@@ -6,8 +6,8 @@ enum TransportType {
 
 class TransportOption {
   final TransportType type;
-  final int cost;
-  final int co2Emissions;
+  final double cost;
+  final double co2Emissions;
   final int time;
 
   TransportOption({

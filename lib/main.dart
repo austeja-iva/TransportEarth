@@ -1,4 +1,14 @@
+import 'dart:convert';
+import 'dart:js_interop';
+
 import 'package:flutter/material.dart';
+import 'package:transport_earth/classes/transportOptions.dart';
+import 'package:transport_earth/pages/options_display.dart';
+
+@JS('getCarInfo')
+external JSPromise<JSAny?> getCarInfo(JSString origin, JSString destination);
+@JS('getBikeInfo')
+external JSPromise<JSAny?> getBikeInfo(JSString origin, JSString destination);
 
 final String font = 'Bierstadt';
 void main() {
@@ -24,8 +34,23 @@ class MyTest extends StatelessWidget {
   }
 }
 
-class HomePage extends StatelessWidget {
+class HomePage extends StatefulWidget {
   const HomePage({super.key});
+
+  @override
+  State<HomePage> createState() => _HomePageState();
+}
+
+class _HomePageState extends State<HomePage> {
+  final TextEditingController _startController = TextEditingController();
+  final TextEditingController _destinationController = TextEditingController();
+
+  @override
+  void dispose() {
+    _startController.dispose();
+    _destinationController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -51,13 +76,16 @@ class HomePage extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  Image.asset(
-                    'web/icons/Globe.webp',
-                    width: 100,
-                    height: 100,
-                    alignment: Alignment.topLeft,
+                  Row(
+                    children: [
+                      Image.asset(
+                        'web/icons/Globe.webp',
+                        width: 100,
+                        height: 100,
+                        alignment: Alignment.topLeft,
+                      ),
+                    ],
                   ),
-                  const SizedBox(height: 28),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
@@ -111,6 +139,7 @@ class HomePage extends StatelessWidget {
                           children: [
                             Expanded(
                               child: TextField(
+                                controller: _startController,
                                 decoration: const InputDecoration(
                                   border: OutlineInputBorder(),
                                   labelText: 'Starting Location',
@@ -126,6 +155,7 @@ class HomePage extends StatelessWidget {
                             const SizedBox(width: 12),
                             Expanded(
                               child: TextField(
+                                controller: _destinationController,
                                 decoration: const InputDecoration(
                                   border: OutlineInputBorder(),
                                   labelText: 'Destination',
@@ -153,7 +183,66 @@ class HomePage extends StatelessWidget {
                         SizedBox(
                           width: double.infinity,
                           child: FilledButton.icon(
-                            onPressed: () {},
+                            onPressed: () async {
+                              final origin = _startController.text.trim();
+                              final destination = _destinationController.text.trim();
+
+                              if (origin.isEmpty || destination.isEmpty) {
+                                debugPrint('Please enter both a starting location and a destination.');
+                                return;
+                              }
+
+                              try {
+                                final carResult = await getCarInfo(
+                                  origin.toJS,
+                                  destination.toJS,
+                                ).toDart;
+                                final bikeResult = await getBikeInfo(
+                                  origin.toJS,
+                                  destination.toJS,
+                                ).toDart;
+
+                                final carData = jsonDecode(carResult.toString()) as Map<String, dynamic>;
+                                final bikeData = jsonDecode(bikeResult.toString()) as Map<String, dynamic>;
+
+                                final carDistance = carData['distance'];
+                                final carDuration = carData['duration'];
+                                final carCo2 = carData['co2'];
+
+                                final bikeDistance = bikeData['distance'];
+                                final bikeDuration = bikeData['duration'];
+                                final bikeCo2 = bikeData['co2'];
+
+                                List<TransportOption> options = [
+                                  TransportOption(
+                                    type: TransportType.car,
+                                    cost: carDistance * 0.1536 * 0.000621371, // Convert meters to miles and multiply by $0.1536 per mile
+                                    co2Emissions: carDistance * 0.000025, // Convert meters to miles and multiply by 0.0000055 Kg CO2 per mile
+                                    time: (carDuration / 60).round(),
+                                  ),
+                                  TransportOption(
+                                    type: TransportType.bike,
+                                    cost: 0.0,
+                                    co2Emissions: bikeDistance * 0.0000005, // Assuming negligible CO2 emissions for biking
+                                    time: (bikeDuration / 60).round(),
+                                  ),
+                                ];
+
+                                debugPrint('Car result - distance: $carDistance, duration: $carDuration, co2: $carCo2');
+                                debugPrint('Bike result - distance: $bikeDistance, duration: $bikeDuration, co2: $bikeCo2');
+
+                                if (!context.mounted) return;
+
+                                Navigator.of(context).push(
+                                  MaterialPageRoute(
+                                    builder: (context) => OptionsDisplayPage(options: options),
+                                  ),
+                                );
+                              } catch (error, stackTrace) {
+                                debugPrint('Route lookup failed: $error');
+                                debugPrint('Stack trace: $stackTrace');
+                              }
+                            },
                             icon: const Icon(Icons.route),
                             label: const Text(
                               'Find the Most Eco-Friendly Route',

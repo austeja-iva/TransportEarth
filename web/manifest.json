@@ -45,6 +45,21 @@
             "src": "icons/Globe.webp",
             "sizes": "899x899",
             "type": "image/webp"
+        },
+        {
+            "src": "icons/Bike.webp",
+            "sizes": "769x769",
+            "type": "image/webp"
+        },
+        {
+            "src": "icons/Plane.webp",
+            "sizes": "769x769",
+            "type": "image/webp"
+        },
+        {
+            "src": "icons/Car.webp",
+            "sizes": "769x769",
+            "type": "image/webp"
         }
     ]
 }
