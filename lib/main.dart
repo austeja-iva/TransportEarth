@@ -9,6 +9,8 @@ import 'package:transport_earth/pages/options_display.dart';
 external JSPromise<JSAny?> getCarInfo(JSString origin, JSString destination);
 @JS('getBikeInfo')
 external JSPromise<JSAny?> getBikeInfo(JSString origin, JSString destination);
+@JS('runFlightsDemo')
+external JSPromise<JSAny?> runFlightsDemo();
 
 final String font = 'Bierstadt';
 void main() {
@@ -227,6 +229,27 @@ class _HomePageState extends State<HomePage> {
                                     time: (bikeDuration / 60).round(),
                                   ),
                                 ];
+
+                                // If destination is Los Angeles, California (case-insensitive), add a flight option using test.js
+                                if (destination.toLowerCase() == 'los angeles, california') {
+                                  options.add(
+                                    TransportOption(
+                                      type: TransportType.plane,
+                                      cost: 1040, // Placeholder cost for flight
+                                      co2Emissions: 607, // Placeholder CO2 emissions for flight
+                                      time: 305, // Placeholder time in minutes for flight
+                                    ),
+                                  );
+                                } else if (destination.toLowerCase() == 'new york, new york') {
+                                  options.add(
+                                    TransportOption(
+                                      type: TransportType.plane,
+                                      cost: 805, // Placeholder cost for flight
+                                      co2Emissions: 374, // Placeholder CO2 emissions for flight
+                                      time: 226, // Placeholder time in minutes for flight
+                                    ),
+                                  );
+                                }
 
                                 debugPrint('Car result - distance: $carDistance, duration: $carDuration, co2: $carCo2');
                                 debugPrint('Bike result - distance: $bikeDistance, duration: $bikeDuration, co2: $bikeCo2');

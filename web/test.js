@@ -73,7 +73,7 @@ function findFlights(flightData) {
 
 // Fetches data, computes the summaries, and returns output
 async function runFlightsDemo() {
-    const flightData = await getFlightData("MCO", "LAX", "2026-07-15");
+    const flightData = await getFlightData();
     if (!flightData) {
         return null;
     }
