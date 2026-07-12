@@ -38,6 +38,7 @@ class _TransportCardState extends State<TransportCard> {
   @override
   Widget build(BuildContext context) {
     return Card(
+      color: Color(0xFF577341),
       child: Padding(
         padding: const EdgeInsets.all(8.0),
         child: Row(
